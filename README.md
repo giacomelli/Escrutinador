@@ -3,13 +3,74 @@
 Read metadata from your entities.
 
 --------
+##Metadata provider
+Escrutinador use IMetadataProvider 's implementation to read the metadata of your entities.
+
+Nowadays the only available metadata provider is DataAnnotationsMetadataProvider.
+
 
 ##Usage
-```csharp
+###Reading metadata from DataAnnotation
+For an entity, like MyEntity below:
 
+```csharp
+public class MyEntity
+{
+    [StringLength(50, MinimumLength = 10)]
+    [Required]
+    [Display(Order = 2)]
+    public string Text { get; set; }
+}
 ```
 
+You can read the metadata in this way:
+```csharp
+var provider = EscrutinadorConfig.MetadataProvider;
+var metadata = provider.Property<MyEntity>(d => d.Text);
+Console.WriteLine("Name: {0}", metadata.Name);
+Console.WriteLine("MinLength: {0}", metadata.MinLength);
+Console.WriteLine("MaxLength: {0}", metadata.MaxLength);
+Console.WriteLine("Order: {0}", metadata.Order);
+Console.WriteLine("Required: {0}", metadata.Required);
+```
+The console output will be:
+Name: Text
+MinLength: 10
+MaxLength: 50
+Order: 2
+Required: true
+
 ##Extensions
+Escrutinador's extensions allow extend the library to combine it with others libraries.
+
+###Escrutinador.Extensions.EntityFramework
+It has a EntityTypeConfiguration called MetadataEntityTypeConfiguration that allows auto map the EF entity using the information from metadata.
+
+```csharp
+public class MyEntityMap : MetadataEntityTypeConfiguration<MyEntity>
+{
+    public MyEntityMap()
+    {
+        this.ToTable("MyEntity");		
+        this.MapMetadata(t => t.Text);		
+    }
+}
+```
+The line *"this.MapMetadata(t => t.Text);"*	is equivalent to:
+```csharp
+this.Property(t => t.Text).HasMaxLength(50).IsRequired();
+```
+###Escrutinador.Extensions.KissSpecifications
+This extension has a [SpecificationBase](http://github.com/giacomelli/KissSpecification) called MustComplyWithMetadataSpecification that verify if the entity state is comply with the metadata.
+
+```csharp
+var entity = new MyEntity() { Text = "A" };
+SpecificationService.ThrowIfAnySpecificationIsNotSatisfiedBy(
+	entity, 
+	new MustComplyWithMetadataSpecification<MyEntity>());
+```  
+
+The code above will throw a SpecificationNotSatisfiedException because the property Text with value "A" does not comply with MinLength metadata information.
 
 ##FAQ
 
@@ -20,7 +81,7 @@ Read metadata from your entities.
 
   - Add NuGet package.
   - Add new IMetadataProvider's implementation
-  - Add a fluent metadata mapper.
+  - Add a fluent metadata definer.
  
 --------
 
