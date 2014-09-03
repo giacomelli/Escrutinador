@@ -1,6 +1,6 @@
 #Escrutinador
 
-Read metadata from your entities.
+Read metadata from your entities no matter how they were defined.
 
 --------
 ##Metadata provider
@@ -8,6 +8,12 @@ Escrutinador use IMetadataProvider 's implementation to read the metadata of you
 
 Nowadays the only available metadata provider is DataAnnotationsMetadataProvider.
 
+But the idea is have a lot of IMetadataProvider tha allow define metadata using constants, database, xml files, fluent apis, etc.
+
+##Setup
+    PM> Install-Package Escrutinador
+    PM> Install-Package Escrutinador.Extensions.EntityFramework
+    PM> Install-Package Escrutinador.Extensions.KissSpecifications
 
 ##Usage
 ###Reading metadata from DataAnnotation
@@ -26,7 +32,7 @@ public class MyEntity
 You can read the metadata in this way:
 ```csharp
 var provider = EscrutinadorConfig.MetadataProvider;
-var metadata = provider.Property<MyEntity>(d => d.Text);
+var metadata = provider.Property<MyEntity>(p => p.Text);
 Console.WriteLine("Name: {0}", metadata.Name);
 Console.WriteLine("MinLength: {0}", metadata.MinLength);
 Console.WriteLine("MaxLength: {0}", metadata.MaxLength);
@@ -34,17 +40,17 @@ Console.WriteLine("Order: {0}", metadata.Order);
 Console.WriteLine("Required: {0}", metadata.Required);
 ```
 The console output will be:
-Name: Text
-MinLength: 10
-MaxLength: 50
-Order: 2
-Required: true
+    Name: Text
+    MinLength: 10
+    MaxLength: 50
+    Order: 2
+    Required: true
 
 ##Extensions
-Escrutinador's extensions allow extend the library to combine it with others libraries.
+Escrutinador's extensions allow to extend the library to combine it with others libraries.
 
 ###Escrutinador.Extensions.EntityFramework
-It has a EntityTypeConfiguration called MetadataEntityTypeConfiguration that allows auto map the EF entity using the information from metadata.
+It has an EntityTypeConfiguration called [MetadataEntityTypeConfiguration](src/Escrutinador.Extensions.EntityFramework/MetadataEntityTypeConfiguration.cs) that allows auto map the EF entity using the information from metadata.
 
 ```csharp
 public class MyEntityMap : MetadataEntityTypeConfiguration<MyEntity>
@@ -61,7 +67,7 @@ The line *"this.MapMetadata(t => t.Text);"*	is equivalent to:
 this.Property(t => t.Text).HasMaxLength(50).IsRequired();
 ```
 ###Escrutinador.Extensions.KissSpecifications
-This extension has a [SpecificationBase](http://github.com/giacomelli/KissSpecification) called MustComplyWithMetadataSpecification that verify if the entity state is comply with the metadata.
+This extension has a [SpecificationBase](http://github.com/giacomelli/KissSpecification) called [MustComplyWithMetadataSpecification](src/Escrutinador.Extensions.KissSpecifications/MustComplyWithMetadataSpecification.cs) that verify if the entity's state is complying with the metadata.
 
 ```csharp
 var entity = new MyEntity() { Text = "A" };
@@ -79,7 +85,6 @@ The code above will throw a SpecificationNotSatisfiedException because the prope
 
 ##Roadmap
 
-  - Add NuGet package.
   - Add new IMetadataProvider's implementation
   - Add a fluent metadata definer.
  

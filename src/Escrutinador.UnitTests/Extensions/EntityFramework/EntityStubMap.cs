@@ -11,6 +11,7 @@ namespace Escrutinador.UnitTests.Extensions.EntityFramework
             this.MapMetadata(t => t.UserName);
             this.MapMetadata(t => t.LastModifiedDate);
             this.MapMetadata(t => t.DateKind);
+            this.Property(t => t.UserName).HasMaxLength(50).IsRequired();
         }
     }
 }
